@@ -17,7 +17,7 @@ import com.wierdest.photo_data.controllers.HelloController;
 class PhotoDataApplicationTests {
 
 	@Autowired
-	private HelloController controller;
+	private HelloController helloController;
 
 	@Autowired
 	private TestRestTemplate testRestTemplate;
@@ -27,7 +27,7 @@ class PhotoDataApplicationTests {
 
 	@Test
 	void contextLoads() {
-		assertThat(controller).isNotNull();
+		assertThat(helloController).isNotNull();
 	}
 
 	@Test

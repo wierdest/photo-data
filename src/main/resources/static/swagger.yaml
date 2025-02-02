@@ -24,11 +24,35 @@ servers:
 
 components:
   schemas:
-    PhotoDTO:
+    Photo:
       type: object
+      required:
+        - id
+        - file
       properties:
         id:
-          type: long
+          type: integer
+          format: int64
+          example: 12345
+          description: Unique identifier for the photo.
+        file:
+          type: string
+          format: binary
+          description: The image file associated with the photo.
+        info:
+          $ref: '#/components/schemas/Info'
+          description: Additional information about the photo.
+    Info:
+      type: object
+      properties:
+        descriptor:
+          type: string
+          example: "description value"
+          description: A brief description of the photo.
+      example:
+        descriptor: "description value"
+      description: Metadata or additional information about the photo.
+
     GeneralError:
       type: object
       properties:
@@ -38,6 +62,38 @@ components:
         message:
           type: string
 paths:
+  /upload:
+    post:
+      summary: Posta uma photo para o cloud storage bucket
+      tags:
+        - Upload de Uma Foto
+      description: |
+        Upload da foto
+        Upload das informações inseridas sobre a foto
+      requestBody:
+        description: Foto e descrição sobre a foto
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: O arquivo de imagem a ser enviado.
+                info:
+                  $ref: '#/components/schemas/Info'
+                  description: Informações adicionais sobre a foto.
+      responses:
+        '200':
+          description: Foto e informações enviadas com sucesso.
+        '400':
+          description: Requisição inválida. Verifique os dados enviados.
+          $ref: '#/components/responses/GeneralError'
+        '500':
+          description: Erro interno do servidor.
+          $ref: '#/components/responses/GeneralError'
+
   /hello/param:
     get:
       summary: Diz Hello demonstrando o uso de request param

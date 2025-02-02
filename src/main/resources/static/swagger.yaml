@@ -1,0 +1,79 @@
+openapi: 3.1.0
+info:
+  title: Photo-data API. 
+  summary:  
+  description: |
+    API to serve the photo-data project
+  termsOfService: https://wierdest.com/photo-data/
+  contact:
+    name: API Support
+    url: https://www.wierdest.com/support
+    email: support@wierdest.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.1
+
+externalDocs:
+  description: Find out more about Swagger
+  url: 'http://swagger.io'
+
+servers:
+  - url: http://localhost:8080/
+    description: The local development API server
+
+components:
+  schemas:
+    PhotoDTO:
+      type: object
+      properties:
+        id:
+          type: long
+    GeneralError:
+      type: object
+      properties:
+        code: 
+          type: integer
+          format: int32
+        message:
+          type: string
+paths:
+  /hello/param:
+    get:
+      summary: Diz Hello demonstrando o uso de request param
+      tags:
+        - Diz Hello seguido pela mensagem passada como um request param
+      parameters:
+        - name: message
+          in: query
+          description: RequestParam String para vir depois de Hello, 
+          required: false
+          allowEmptyValue: true # do not use this in real life! 
+      responses:
+        '200':
+          description: Retorna a string Hello, {message}!
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  /hello/path/{message}:
+    get:
+      summary: Diz Hello demonstrando o uso de path variables
+      tags:
+        - Diz Hello seguido pela mensagem passada como um path variable
+      parameters:
+        - name: message
+          in: path
+          description: PathVariable String para vir depois de Hello.
+          required: true # path is required according to open api
+      responses:
+        '200':
+          description: Retorna a string Hello, {message}!
+          content:
+            text/plain:
+              schema:
+                type: string
+
+  
+

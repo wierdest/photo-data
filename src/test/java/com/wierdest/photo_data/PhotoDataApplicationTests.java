@@ -10,6 +10,7 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.wierdest.photo_data.controllers.HelloController;
+import com.wierdest.photo_data.controllers.PhotoController;
 
 // tests the behaviour of the appplication, connecting the server
 
@@ -18,6 +19,9 @@ class PhotoDataApplicationTests {
 
 	@Autowired
 	private HelloController helloController;
+
+	@Autowired 
+	private PhotoController photoController;
 
 	@Autowired
 	private TestRestTemplate testRestTemplate;
@@ -28,6 +32,7 @@ class PhotoDataApplicationTests {
 	@Test
 	void contextLoads() {
 		assertThat(helloController).isNotNull();
+		assertThat(photoController).isNotNull();
 	}
 
 	@Test

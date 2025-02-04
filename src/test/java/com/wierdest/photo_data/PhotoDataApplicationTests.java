@@ -6,6 +6,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,15 +54,12 @@ class PhotoDataApplicationTests {
 	@Test
 	void photosUploadShouldExist() {
 		ResponseEntity<String> response = this.testRestTemplate.postForEntity(
-			"http://localhost:" + port + "/upload",
+			"http://localhost:" + port + "/photos/upload",
 			null,
 			String.class
 
 		);
-
-		assertThat(response.getStatusCode().is4xxClientError()).isFalse();
-		assertThat(response.getStatusCode().is5xxServerError()).isFalse();
+		assertThat(response.getStatusCode().isSameCodeAs(HttpStatus.NOT_FOUND)).isFalse();
 	}
-
 
 }

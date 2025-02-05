@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RequestMapping("/hello")
 public class HelloController {
     private final HelloService service;
-
     public HelloController(HelloService service) {
         this.service = service;
     }

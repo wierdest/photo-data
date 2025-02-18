@@ -25,10 +25,9 @@ import com.wierdest.photo_data.dtos.PhotoDTO;
 import com.wierdest.photo_data.exceptions.InvalidFormatException;
 import com.wierdest.photo_data.exceptions.UploadPhotoException;
 import com.wierdest.photo_data.services.PhotoService;
-import com.wierdest.photo_data.utils.UploadUtils;
 
 @WebMvcTest(PhotoController.class)
-class PhotosWebMockTest {
+class PhotoControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -109,23 +108,18 @@ class PhotosWebMockTest {
             "Test file content".getBytes() // File content
         );
 
-        // Mock the service to throw a StorageException
         when(service.uploadPhoto(any(MultipartFile.class)))
             .thenThrow(new UploadPhotoException("Failed to upload photo due to a storage error!"));
 
-        // Create a mock InfoDTO
         InfoDTO mockInfoDTO = new InfoDTO();
         mockInfoDTO.setDescriptor("some descriptor string");
 
-        // Convert InfoDTO to JSON
         ObjectMapper objectMapper = new ObjectMapper();
         String mockInfoJSON = objectMapper.writeValueAsString(mockInfoDTO);
 
-        // Create a mock Part for the InfoDTO
         MockPart mockInfoPart = new MockPart("info", mockInfoJSON.getBytes());
         mockInfoPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-        // Perform the request and verify the response
         this.mockMvc.perform(
             multipart("/photos/upload")
                 .file(mockFile) // Add the file part

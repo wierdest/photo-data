@@ -5,7 +5,10 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.wierdest.photo_data.DTOs.InfoDTO;
+import com.wierdest.photo_data.dtos.InfoDTO;
+import com.wierdest.photo_data.dtos.PhotoDTO;
+import com.wierdest.photo_data.exceptions.InvalidFormatException;
+import com.wierdest.photo_data.exceptions.UploadPhotoException;
 import com.wierdest.photo_data.services.PhotoService;
 
 import org.springframework.http.ResponseEntity;
@@ -20,9 +23,15 @@ public class PhotoController {
         this.service = service;
     }
     
-   @PostMapping("/upload")
-   public ResponseEntity<String> uploadPhotos(@RequestPart("file") MultipartFile file, @RequestPart("info") InfoDTO info) {       
-        return ResponseEntity.ok(service.getPlaceholderSuccessfulMessage());
-   }
+    @PostMapping("/upload")
+    public ResponseEntity<?> uploadPhoto(@RequestPart("file") MultipartFile file, @RequestPart("info") InfoDTO info) {     
+        try {
+            return ResponseEntity.ok(service.uploadPhoto(file)); 
+        } catch (InvalidFormatException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch(UploadPhotoException e) {
+            return ResponseEntity.internalServerError().body(e.getMessage());
+        }
+    }
     
-}
+}       

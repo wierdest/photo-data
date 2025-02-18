@@ -1,4 +1,4 @@
-package com.wierdest.photo_data.DTOs;
+package com.wierdest.photo_data.dtos;
 
 public class InfoDTO {
    private String descriptor;

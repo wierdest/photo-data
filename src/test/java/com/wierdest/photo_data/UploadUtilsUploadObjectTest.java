@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.nio.file.Path;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +39,7 @@ class UploadUtilsUploadObjectTest {
     private String projectId = "test-project";
     private String bucketName = "test-bucket";
     private String objectName = "test-object";
-    private String filePath = "test-file.txt";
+    private String fileContents = "test-file.txt";
 
     @BeforeEach
     void setUp() {
@@ -62,29 +61,29 @@ class UploadUtilsUploadObjectTest {
     @Test
     void uploadObject_NewObject() throws Exception {
         when(storage.get(bucketName, objectName)).thenReturn(null);
-        when(storage.createFrom(any(BlobInfo.class), any(Path.class), any(Storage.BlobWriteOption.class))).thenReturn(mock(Blob.class));
+        when(storage.create(any(BlobInfo.class), any(byte[].class), any(Storage.BlobTargetOption.class))).thenReturn(mock(Blob.class));
 
         // Act with mocked behaviour
-        UploadUtils.uploadObject(projectId, bucketName, objectName, filePath);
+        UploadUtils.uploadObject(projectId, bucketName, objectName, fileContents.getBytes());
         
         // Assert
         verify(storage, times(1)).get(bucketName, objectName);
-        verify(storage, times(1)).createFrom(any(BlobInfo.class), any(Path.class), any(Storage.BlobWriteOption.class));
+        verify(storage, times(1)).create(any(BlobInfo.class), any(byte[].class), any(Storage.BlobTargetOption.class));
     }
 
    @Test
-   void uploadObject_ExistingObject() throws IOException {
+   void uploadObject_ExistingObject() {
         // For an existing object, we should return a Blob
         Blob mockBlob = mock(Blob.class);
         when(mockBlob.getGeneration()).thenReturn(123L);
 
         when(storage.get(bucketName, objectName)).thenReturn(mockBlob);
-        when(storage.createFrom(any(BlobInfo.class), any(Path.class), any(Storage.BlobWriteOption.class))).thenReturn(mock(Blob.class));
+        when(storage.create(any(BlobInfo.class), any(byte[].class), any(Storage.BlobTargetOption.class))).thenReturn(mock(Blob.class));
         
-        UploadUtils.uploadObject(projectId, bucketName, objectName, filePath);
+        UploadUtils.uploadObject(projectId, bucketName, objectName, fileContents.getBytes());
 
         // Assert that this time we call storage.get two times, one time to check if the object exists, another time to getGeneration()
         verify(storage, times(2)).get(bucketName, objectName);
-        verify(storage, times(1)).createFrom(any(BlobInfo.class), any(Path.class), any(Storage.BlobWriteOption.class));
+        verify(storage, times(1)).create(any(BlobInfo.class), any(byte[].class), any(Storage.BlobTargetOption.class));
    }
 }

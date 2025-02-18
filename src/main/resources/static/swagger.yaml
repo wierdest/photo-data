@@ -24,25 +24,19 @@ servers:
 
 components:
   schemas:
-    Photo:
+    PhotoDTO:
       type: object
       required:
-        - id
         - file
       properties:
-        id:
-          type: integer
-          format: int64
-          example: 12345
-          description: Unique identifier for the photo.
         file:
           type: string
           format: binary
           description: The image file associated with the photo.
         info:
-          $ref: '#/components/schemas/Info'
+          $ref: '#/components/schemas/InfoDTO'
           description: Additional information about the photo.
-    Info:
+    InfoDTO:
       type: object
       properties:
         descriptor:
@@ -53,6 +47,7 @@ components:
         descriptor: "description value"
       description: Metadata or additional information about the photo.
 
+  responses:
     GeneralError:
       type: object
       properties:
@@ -75,15 +70,7 @@ paths:
         content:
           multipart/form-data:
             schema:
-              type: object
-              properties:
-                file:
-                  type: string
-                  format: binary
-                  description: O arquivo de imagem a ser enviado.
-                info:
-                  $ref: '#/components/schemas/Info'
-                  description: Informações adicionais sobre a foto.
+              $ref: '#/components/schemas/PhotoDTO'
       responses:
         '200':
           description: Foto e informações enviadas com sucesso.

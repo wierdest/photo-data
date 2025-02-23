@@ -1,6 +1,5 @@
 package com.wierdest.photo_data;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -8,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -15,8 +15,8 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.mock.web.MockPart;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wierdest.photo_data.controllers.PhotoController;
@@ -30,37 +30,45 @@ import com.wierdest.photo_data.services.PhotoService;
 class PhotoControllerTest {
 
     @Autowired
+    private PhotoController photoController;
+
+    @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
     private PhotoService service;
+
+    @BeforeEach
+    void setUp() {
+        ReflectionTestUtils.setField(photoController, "projectId", "project-id");
+        ReflectionTestUtils.setField(photoController, "bucketName", "bucket-name");
+    }
+
         
     @Test
     void uploadPhotosShouldReturnPhotoDTO() throws Exception {
-        MockMultipartFile mockFile = new MockMultipartFile(
-            "file", // Name of the file part
-            "test-image.jpg", // Original file name
-            MediaType.IMAGE_JPEG_VALUE, // Content type
-            "Test file content".getBytes() // File content
+
+        MockMultipartFile validFile = new MockMultipartFile(
+            "file", 
+            "test-image.jpg",
+            MediaType.IMAGE_JPEG_VALUE,
+            "Test file content".getBytes() 
         );
 
-        InfoDTO mockInfoDTO = new InfoDTO();
-        mockInfoDTO.setDescriptor("some descriptor string");
-
         ObjectMapper objectMapper = new ObjectMapper();
-        String mockInfoJSON = objectMapper.writeValueAsString(mockInfoDTO);
+        InfoDTO infoDTO = new InfoDTO("valid-file descriptor string");
+        String mockInfoJSON = objectMapper.writeValueAsString(infoDTO);
+        MockPart infoPart = new MockPart("info", mockInfoJSON.getBytes());
+        infoPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+        PhotoDTO photoDTO = new PhotoDTO("some-name", "some-link");
 
-        MockPart mockInfoPart = new MockPart("info", mockInfoJSON.getBytes());
-        mockInfoPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-        PhotoDTO mockPhotoDTO = new PhotoDTO("some-name", "some-link");
-
-        when(service.uploadPhoto(mockFile)).thenReturn(mockPhotoDTO);
-
+        when(service.uploadPhoto(validFile, "project-id", "bucket-name", infoDTO)).thenReturn(photoDTO);
+        
         this.mockMvc.perform(
             multipart("/photos/upload")
-            .file(mockFile)     
-            .part(mockInfoPart)
+            .file(validFile)     
+            .part(infoPart)
             .contentType(MediaType.MULTIPART_FORM_DATA)
         ).andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("some-name"))
@@ -70,29 +78,23 @@ class PhotoControllerTest {
     @Test
     void uploadPhotosShouldThrowInvalidFormatException() throws Exception {
 
-        when(service.uploadPhoto(any(MultipartFile.class)))
-        .thenThrow(new InvalidFormatException("Invalid file format. Only JPEG and PNG allowed"));
-
-        MockMultipartFile mockFile = new MockMultipartFile(
-            "file", // Name of the file part
-            "test-image.gif", // Notice the invalid format, .gif
-            MediaType.IMAGE_GIF_VALUE, // Content type
-            "Test file content".getBytes() // File content
+        MockMultipartFile invalidFile = new MockMultipartFile(
+            "file", 
+            "test-image.gif",
+            MediaType.IMAGE_GIF_VALUE,
+            "Test file content".getBytes()
         );
-
-        InfoDTO mockInfoDTO = new InfoDTO();
-        mockInfoDTO.setDescriptor("some descriptor string");
-
         ObjectMapper objectMapper = new ObjectMapper();
-        String mockInfoJSON = objectMapper.writeValueAsString(mockInfoDTO);
-
-        MockPart mockInfoPart = new MockPart("info", mockInfoJSON.getBytes());
-        mockInfoPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-
+        InfoDTO infoDTO = new InfoDTO("valid-file descriptor string");
+        String mockInfoJSON = objectMapper.writeValueAsString(infoDTO);
+        MockPart infoPart = new MockPart("info", mockInfoJSON.getBytes());
+        infoPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);        
+        
+        when(service.uploadPhoto(invalidFile, "project-id", "bucket-name", infoDTO)).thenThrow(new InvalidFormatException("Invalid file format. Only JPEG and PNG allowed"));
         this.mockMvc.perform(
             multipart("/photos/upload")
-            .file(mockFile)     
-            .part(mockInfoPart)
+            .file(invalidFile)     
+            .part(infoPart)
             .contentType(MediaType.MULTIPART_FORM_DATA)
         ).andExpect(status().isBadRequest())
         .andExpect(content().string("Invalid file format. Only JPEG and PNG allowed"));
@@ -100,30 +102,24 @@ class PhotoControllerTest {
 
     @Test
     void uploadPhotosShouldThrowUploadPhotoExceptionForStorageException() throws Exception {
-        // Create a mock file
-        MockMultipartFile mockFile = new MockMultipartFile(
-            "file", // Name of the file part
-            "test-image.jpg", // Original file name
-            MediaType.IMAGE_JPEG_VALUE, // Content type
-            "Test file content".getBytes() // File content
+        MockMultipartFile validFile = new MockMultipartFile(
+            "file", 
+            "test-image.jpg",
+            MediaType.IMAGE_JPEG_VALUE,
+            "Test file content".getBytes() 
         );
 
-        when(service.uploadPhoto(any(MultipartFile.class)))
-            .thenThrow(new UploadPhotoException("Failed to upload photo due to a storage error!"));
-
-        InfoDTO mockInfoDTO = new InfoDTO();
-        mockInfoDTO.setDescriptor("some descriptor string");
-
         ObjectMapper objectMapper = new ObjectMapper();
-        String mockInfoJSON = objectMapper.writeValueAsString(mockInfoDTO);
-
-        MockPart mockInfoPart = new MockPart("info", mockInfoJSON.getBytes());
-        mockInfoPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+        InfoDTO infoDTO = new InfoDTO("valid-file descriptor string");
+        String mockInfoJSON = objectMapper.writeValueAsString(infoDTO);
+        MockPart infoPart = new MockPart("info", mockInfoJSON.getBytes());
+        infoPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+        when(service.uploadPhoto(validFile, "project-id", "bucket-name", infoDTO)).thenThrow(new UploadPhotoException("Failed to upload photo due to a storage error!"));
 
         this.mockMvc.perform(
             multipart("/photos/upload")
-                .file(mockFile) // Add the file part
-                .part(mockInfoPart) // Add the info part
+                .file(validFile)
+                .part(infoPart)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
         )
         .andExpect(status().isInternalServerError())

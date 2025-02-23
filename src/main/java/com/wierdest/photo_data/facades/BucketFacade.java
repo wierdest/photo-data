@@ -1,4 +1,4 @@
-package com.wierdest.photo_data.utils;
+package com.wierdest.photo_data.facades;
 
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobId;
@@ -7,13 +7,11 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
 
-public final class UploadUtils {
+public enum BucketFacade {
 
-    private UploadUtils() {
-        throw new IllegalStateException("Cannot instantiate utility class!");
-    }
+    INSTANCE;
 
-    public static Blob uploadObject(String projectId, String bucketName, String objectName, byte[] filePath) throws StorageException {
+    public Blob uploadObject(String projectId, String bucketName, String objectName, byte[] filePath) throws StorageException {
         Storage storage = StorageOptions.newBuilder().setProjectId(projectId).build().getService();
         BlobId blobId = BlobId.of(bucketName, objectName);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();

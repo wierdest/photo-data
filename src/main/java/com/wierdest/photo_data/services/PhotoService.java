@@ -1,40 +1,28 @@
 package com.wierdest.photo_data.services;
 
 import java.io.IOException;
-import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.StorageException;
+import com.wierdest.photo_data.converters.BlobToPhotoDTOConverter;
+import com.wierdest.photo_data.dtos.InfoDTO;
 import com.wierdest.photo_data.dtos.PhotoDTO;
 import com.wierdest.photo_data.exceptions.InvalidFormatException;
 import com.wierdest.photo_data.exceptions.UploadPhotoException;
-import com.wierdest.photo_data.utils.UploadUtils;
+import com.wierdest.photo_data.facades.BucketFacade;
 
 @Service
 public class PhotoService {
-
-    @Value("${gcp.project-id}")
-    private String projectId;
-
-    @Value("${gcp.bucket-name}")
-    private String bucketName;
-
-    public PhotoDTO uploadPhoto(MultipartFile file) throws InvalidFormatException {
-
+    public PhotoDTO uploadPhoto(MultipartFile file, String projectId, String bucketName, InfoDTO info) throws InvalidFormatException {
         try {
-
             if(!isValidFormat(file)) {
                 throw new InvalidFormatException("Invalid file format. Only JPEG and PNG allowed");
             }
-            
-            Blob blob = UploadUtils.uploadObject(projectId, bucketName, bucketName, file.getBytes());
-                    
-            return new PhotoDTO(blob.getName(), blob.getMediaLink());
-
+            Blob blob = BucketFacade.INSTANCE.uploadObject(projectId, bucketName, extractNameFromInfoDTODescriptor(info), file.getBytes());
+            return new BlobToPhotoDTOConverter(blob).convert();
         } catch (IOException e) {
             throw new InvalidFormatException("Failed to read file content! " + e.getMessage(), e.getCause());
         } catch (StorageException e) {
@@ -45,5 +33,9 @@ public class PhotoService {
     private boolean isValidFormat(MultipartFile file) {
         String contentType = file.getContentType();
         return "image/jpeg".equals(contentType) || "image/png".equals(contentType);
+    }
+
+    private String extractNameFromInfoDTODescriptor(InfoDTO info) {
+        return info.descriptor().split(" ")[0];
     }
 }

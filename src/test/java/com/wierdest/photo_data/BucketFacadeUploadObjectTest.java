@@ -7,8 +7,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,10 +18,9 @@ import com.google.cloud.storage.Blob;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
+import com.wierdest.photo_data.facades.*;
 
-import com.wierdest.photo_data.utils.UploadUtils;
-
-class UploadUtilsUploadObjectTest {
+class BucketFacadeUploadObjectTest {
 
     @Mock
     private StorageOptions storageOptions;
@@ -64,7 +61,7 @@ class UploadUtilsUploadObjectTest {
         when(storage.create(any(BlobInfo.class), any(byte[].class), any(Storage.BlobTargetOption.class))).thenReturn(mock(Blob.class));
 
         // Act with mocked behaviour
-        UploadUtils.uploadObject(projectId, bucketName, objectName, fileContents.getBytes());
+        BucketFacade.INSTANCE.uploadObject(projectId, bucketName, objectName, fileContents.getBytes());
         
         // Assert
         verify(storage, times(1)).get(bucketName, objectName);
@@ -80,7 +77,7 @@ class UploadUtilsUploadObjectTest {
         when(storage.get(bucketName, objectName)).thenReturn(mockBlob);
         when(storage.create(any(BlobInfo.class), any(byte[].class), any(Storage.BlobTargetOption.class))).thenReturn(mock(Blob.class));
         
-        UploadUtils.uploadObject(projectId, bucketName, objectName, fileContents.getBytes());
+        BucketFacade.INSTANCE.uploadObject(projectId, bucketName, objectName, fileContents.getBytes());
 
         // Assert that this time we call storage.get two times, one time to check if the object exists, another time to getGeneration()
         verify(storage, times(2)).get(bucketName, objectName);

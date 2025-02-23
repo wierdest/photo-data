@@ -32,7 +32,7 @@ public class PhotoController {
     }
     
     @PostMapping("/upload")
-    public ResponseEntity<?> uploadPhoto(@RequestPart("file") MultipartFile file, @RequestPart("info") InfoDTO info) {     
+    public ResponseEntity<Object> uploadPhoto(@RequestPart("file") MultipartFile file, @RequestPart("info") InfoDTO info) {     
         try {
             return ResponseEntity.ok(service.uploadPhoto(file, this.projectId, this.bucketName, info)); 
         } catch (InvalidFormatException e) {

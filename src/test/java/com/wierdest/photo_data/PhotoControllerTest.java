@@ -55,14 +55,14 @@ class PhotoControllerTest {
         ReflectionTestUtils.setField(photoController, "projectId", "project-id");
         ReflectionTestUtils.setField(photoController, "bucketName", "bucket-name");
 
-        this.validFile = new MockMultipartFile(
+        validFile = new MockMultipartFile(
             "file", 
             "test-image.jpg",
             MediaType.IMAGE_JPEG_VALUE,
             "Test file content".getBytes() 
         );
 
-        this.invalidFile = new MockMultipartFile(
+        invalidFile = new MockMultipartFile(
             "file", 
             "test-image.gif",
             MediaType.IMAGE_GIF_VALUE,
@@ -70,22 +70,22 @@ class PhotoControllerTest {
         );
 
         ObjectMapper objectMapper = new ObjectMapper();
-        this.infoDTO = new InfoDTO("some-file descriptor string");
+        infoDTO = new InfoDTO("some-file descriptor string");
         String mockInfoJSON = objectMapper.writeValueAsString(infoDTO);
-        this.infoPart = new MockPart("info", mockInfoJSON.getBytes());
+        infoPart = new MockPart("info", mockInfoJSON.getBytes());
         infoPart.getHeaders().setContentType(MediaType.APPLICATION_JSON);
-        this.photoDTO = new PhotoDTO("some-name", "some-link");
+        photoDTO = new PhotoDTO("some-name", "some-link");
     }
 
         
     @Test
     void uploadPhotosShouldReturnPhotoDTO() throws Exception {
-        when(service.uploadPhoto(this.validFile, "project-id", "bucket-name", this.infoDTO)).thenReturn(this.photoDTO);
+        when(service.uploadPhoto(validFile, "project-id", "bucket-name", infoDTO)).thenReturn(photoDTO);
         
-        this.mockMvc.perform(
+        mockMvc.perform(
             multipart("/photos/upload")
-            .file(this.validFile)     
-            .part(this.infoPart)
+            .file(validFile)     
+            .part(infoPart)
             .contentType(MediaType.MULTIPART_FORM_DATA)
         ).andExpect(status().isOk())
         .andExpect(jsonPath("$.name").value("some-name"))
@@ -94,25 +94,25 @@ class PhotoControllerTest {
 
     @Test
     void uploadPhotosShouldThrowInvalidFormatException() throws Exception {
-        when(service.uploadPhoto(this.invalidFile, "project-id", "bucket-name", this.infoDTO)).thenThrow(new InvalidFormatException("Invalid file format. Only JPEG and PNG allowed"));
+        when(service.uploadPhoto(invalidFile, "project-id", "bucket-name", infoDTO)).thenThrow(new InvalidFormatException("Invalid file format. Only JPEG and PNG allowed"));
         
-        this.mockMvc.perform(
+        mockMvc.perform(
             multipart("/photos/upload")
-            .file(this.invalidFile)     
-            .part(this.infoPart)
+            .file(invalidFile)     
+            .part(infoPart)
             .contentType(MediaType.MULTIPART_FORM_DATA)
         ).andExpect(status().isBadRequest())
         .andExpect(content().string("Invalid file format. Only JPEG and PNG allowed"));
     }
 
     @Test
-    void uploadPhotosShouldThrowUploadPhotoExceptionForStorageException() throws Exception {
-        when(service.uploadPhoto(this.validFile, "project-id", "bucket-name", this.infoDTO)).thenThrow(new UploadPhotoException("Failed to upload photo due to a storage error!"));
+    void uploadPhotosShouldThrowUploadPhotoException() throws Exception {
+        when(service.uploadPhoto(validFile, "project-id", "bucket-name", infoDTO)).thenThrow(new UploadPhotoException("Failed to upload photo due to a storage error!"));
 
-        this.mockMvc.perform(
+        mockMvc.perform(
             multipart("/photos/upload")
-                .file(this.validFile)
-                .part(this.infoPart)
+                .file(validFile)
+                .part(infoPart)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
         )
         .andExpect(status().isInternalServerError())

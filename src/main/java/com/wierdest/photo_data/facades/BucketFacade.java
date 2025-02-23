@@ -7,9 +7,18 @@ import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageException;
 import com.google.cloud.storage.StorageOptions;
 
-public enum BucketFacade {
+public class BucketFacade {
 
-    INSTANCE;
+    private BucketFacade() {};
+
+    private static class SingletonHelper {
+        private static final BucketFacade INSTANCE = new BucketFacade();
+    }
+
+    public static BucketFacade getInstance() {
+        return SingletonHelper.INSTANCE;
+    }
+
 
     public Blob uploadObject(String projectId, String bucketName, String objectName, byte[] filePath) throws StorageException {
         Storage storage = StorageOptions.newBuilder().setProjectId(projectId).build().getService();

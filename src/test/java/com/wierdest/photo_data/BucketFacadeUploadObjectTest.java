@@ -56,12 +56,12 @@ class BucketFacadeUploadObjectTest {
     }
     
     @Test
-    void uploadObject_NewObject() throws Exception {
+    void uploadObjectShouldUploadNewObject() throws Exception {
         when(storage.get(bucketName, objectName)).thenReturn(null);
         when(storage.create(any(BlobInfo.class), any(byte[].class), any(Storage.BlobTargetOption.class))).thenReturn(mock(Blob.class));
 
         // Act with mocked behaviour
-        BucketFacade.INSTANCE.uploadObject(projectId, bucketName, objectName, fileContents.getBytes());
+        BucketFacade.getInstance().uploadObject(projectId, bucketName, objectName, fileContents.getBytes());
         
         // Assert
         verify(storage, times(1)).get(bucketName, objectName);
@@ -69,7 +69,7 @@ class BucketFacadeUploadObjectTest {
     }
 
    @Test
-   void uploadObject_ExistingObject() {
+   void uploadObjectShouldUploadExistingObject() {
         // For an existing object, we should return a Blob
         Blob mockBlob = mock(Blob.class);
         when(mockBlob.getGeneration()).thenReturn(123L);
@@ -77,7 +77,7 @@ class BucketFacadeUploadObjectTest {
         when(storage.get(bucketName, objectName)).thenReturn(mockBlob);
         when(storage.create(any(BlobInfo.class), any(byte[].class), any(Storage.BlobTargetOption.class))).thenReturn(mock(Blob.class));
         
-        BucketFacade.INSTANCE.uploadObject(projectId, bucketName, objectName, fileContents.getBytes());
+        BucketFacade.getInstance().uploadObject(projectId, bucketName, objectName, fileContents.getBytes());
 
         // Assert that this time we call storage.get two times, one time to check if the object exists, another time to getGeneration()
         verify(storage, times(2)).get(bucketName, objectName);

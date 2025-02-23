@@ -21,7 +21,7 @@ public class PhotoService {
             if(!isValidFormat(file)) {
                 throw new InvalidFormatException("Invalid file format. Only JPEG and PNG allowed");
             }
-            Blob blob = BucketFacade.INSTANCE.uploadObject(projectId, bucketName, extractNameFromInfoDTODescriptor(info), file.getBytes());
+            Blob blob = BucketFacade.getInstance().uploadObject(projectId, bucketName, extractNameFromInfoDTODescriptor(info), file.getBytes());
             return new BlobToPhotoDTOConverter(blob).convert();
         } catch (IOException e) {
             throw new InvalidFormatException("Failed to read file content! " + e.getMessage(), e.getCause());

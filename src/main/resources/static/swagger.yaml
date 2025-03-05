@@ -57,7 +57,7 @@ components:
         message:
           type: string
 paths:
-  /upload:
+  /photos/upload:
     post:
       summary: Posta uma photo para o cloud storage bucket
       tags:
@@ -71,6 +71,9 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/PhotoDTO'
+            encoding:
+              info: 
+                contentType: application/json
       responses:
         '200':
           description: Foto e informações enviadas com sucesso.

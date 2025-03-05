@@ -9,7 +9,7 @@ import com.google.cloud.storage.StorageOptions;
 
 public class BucketFacade {
 
-    private BucketFacade() {};
+    private BucketFacade() {}
 
     private static class SingletonHelper {
         private static final BucketFacade INSTANCE = new BucketFacade();

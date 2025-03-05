@@ -21,6 +21,8 @@ externalDocs:
 servers:
   - url: http://localhost:8080/
     description: The local development API server
+  - url: https://photo-data-382933353305.southamerica-east1.run.app
+    description: Prod
 
 components:
   schemas:
